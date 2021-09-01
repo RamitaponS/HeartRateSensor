@@ -12,12 +12,12 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
  
 #define REPORTING_PERIOD_MS 1000
  
-char auth[] = "Kdc7-g4Bpwatfkw-L7yjbXbbQR-Uos3Q";             // Auth Token in Blynk App.
-char ssid[] = "ADEAR";                                     //Hospot Name.
-char pass[] = "11111111";                                 //Password
+char auth[] = "Token";             // Auth Token in Blynk App.
+char ssid[] = "x";                                     //Hospot Name.
+char pass[] = "xxxxxxxx";                                 //Password
 
 //For mean function
-float mean[10];
+float mean[10]; // Sensor unstable
 int i = 0;
 
 // Connections : SCL PIN - D1 , SDA PIN - D2 , INT PIN - D0
@@ -31,12 +31,11 @@ uint32_t tsLastReport = 0;
 //Blynk LCD
 WidgetLCD lcd(V1);
 
-
 void onBeatDetected()
 {
     Serial.println("Beat Detected!");
 }
-
+//set up
 void setup()
 {
     Serial.begin(115200);
@@ -68,12 +67,9 @@ void setup()
     else
     {
          Serial.println("SUCCESS");
-         
          pox.setOnBeatDetectedCallback(onBeatDetected);
     }
- 
     pox.setIRLedCurrent(MAX30100_LED_CURR_7_6MA);
-    
 }
 
 void LCD(float bpm,float spo2){
@@ -89,6 +85,7 @@ void Mean(){
   {
     sum += mean[k];
   }
+ //Check
   Serial.println("MEAN: ");
   Serial.print(sum/10.0);
         
@@ -117,6 +114,7 @@ void Mean(){
   sum = 0.0;
   i = 0;
 }
+
 void loop()
 {
     pox.update();
@@ -124,9 +122,9 @@ void loop()
     BPM = pox.getHeartRate();
     SpO2 = pox.getSpO2();
     
-    if (millis() - tsLastReport > REPORTING_PERIOD_MS)
+    if (millis() - tsLastReport > REPORTING_PERIOD_MS) //REPORTING_PERIOD_MS 1000
     {
-      if(BPM > 60.0 and BPM < 120.0)
+      if(BPM > 60.0 and BPM < 120.0)//for reasonable value
       {
         Blynk.virtualWrite(V3, BPM);
         Blynk.virtualWrite(V4, SpO2);
@@ -147,7 +145,7 @@ void loop()
           mean[i] = BPM;
           i++;
         }
-        if(mean[i-1] != BPM)
+        if(mean[i-1] != BPM)//duplicate value
         {
           mean[i] = BPM;
           Serial.print(mean[i]);
@@ -169,7 +167,7 @@ void loop()
       lcd.print(3,0,"Waiting...");
       
       
-      //mean
+      //mean calculate
       if(i == 10)
       {
         Mean();
